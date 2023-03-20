@@ -249,6 +249,7 @@ function(_yargs, d3, demos) {
         this.info('`git reset`')
         this.info('`git rev_parse`')
         this.info('`git revert`')
+        this.info('`git switch`')
         this.info('`git tag`')
         return
       }
@@ -489,6 +490,42 @@ function(_yargs, d3, demos) {
           'HEAD', after.commit.id,
           'checkout: moving from ' + before.ref +
           ' to ' + name
+        )
+      })
+    },
+
+    switch: function(args, opts, cmdStr) {
+      opts = yargs(cmdStr, {
+        alias: { create: ['c'] },
+      })
+      
+      var newBranch = opts.c || opts._[0]
+      if (!newBranch) {
+        return this.error('The \'switch\' command requires a branch name to switch to.')
+      }
+
+      var startPoint = null
+      if (opts.c && opts._[0]) {
+        startPoint = opts._[0]
+      }
+
+      if (opts.c) {
+        // Create the branch before switching
+
+        if (startPoint) {
+          this.branch(null, null, newBranch + ' ' + startPoint)
+        } else {
+          this.branch(null, null, newBranch)
+        }
+      }
+
+      this.transact(function() {
+        this.getRepoView().checkout(newBranch);
+      }, function(before, after) {
+        this.getRepoView().addReflogEntry(
+          'HEAD', after.commit.id,
+          'switch: moving from ' + before.ref +
+          ' to ' + newBranch
         )
       })
     },

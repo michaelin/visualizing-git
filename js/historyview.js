@@ -1282,6 +1282,30 @@ define(['d3'], function() {
       return this;
     },
 
+    switch: function(ref) {
+      var commit = this.getCommit(ref);
+
+      if (!commit) {
+        throw new Error('Cannot find commit: ' + ref);
+      }
+
+      var previousHead = this.getCircle('HEAD'),
+        newHead = this.getCircle(commit.id);
+
+      if (previousHead && !previousHead.empty()) {
+        previousHead.classed('checked-out', false);
+      }
+
+      var isBranch = this.branches.indexOf(ref) !== -1
+      this._setCurrentBranch(isBranch ? ref : null);
+      this.moveTag('HEAD', commit.id);
+      this.renderTags();
+
+      newHead.classed('checked-out', true);
+
+      return this;
+    },
+
     reset: function(ref) {
       var commit = this.getCommit(ref);
 
